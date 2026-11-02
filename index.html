@@ -197,13 +197,13 @@
 <body>
   <header>
     <h1>👑 BALMING PRINCESS 3D ROOM 👑</h1>
-    <p class="ticker">🖱️ 드래그해서 방을 둘러보고 👗 옷장과 🎨 캔버스를 눌러보세요.</p>
+    <p class="ticker">🖱️ 드래그해서 사방을 둘러보고 👗 옷장과 🎨 캔버스를 눌러보세요.</p>
   </header>
 
   <main id="room-viewer" aria-label="드래그해서 둘러볼 수 있는 3D 공주방"></main>
   <div class="hint">
-    ROOM GUIDE<br>드래그: 360° 둘러보기 · 휠: 줌 · 빛나는 오브젝트: 클릭<br>
-    <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:20230520_Interiors_of_the_Yusupov_Palace_on_Moika_66.jpg" target="_blank" rel="noopener noreferrer">배경 사진: Sergey A. Demidov · CC BY 4.0</a>
+    ROOM GUIDE<br>드래그: 좌우·위아래 둘러보기 · 휠: 줌 · 아이콘: 클릭<br>
+    <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:360_view_of_Mrs._Sandburg%27s_Bedroom_(2a47eada-2d4c-4c54-8bce-8fe81c56e617).jpg" target="_blank" rel="noopener noreferrer">360° 파노라마: NPS Photo · 퍼블릭 도메인</a>
   </div>
 
   <div class="audio-control">
@@ -255,10 +255,9 @@
     const container = document.getElementById("room-viewer");
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x09090d);
-    scene.fog = new THREE.Fog(0x09090d, 15, 34);
 
     const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 60);
-    camera.position.set(0, 2.4, 1.2);
+    camera.position.set(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -273,121 +272,11 @@
       return texture;
     }
 
-    const roomTexture = loadImageTexture("./assets/royal-room.jpg");
+    const roomTexture = loadImageTexture("./assets/room-360.jpg");
     const gownTexture = loadImageTexture("./assets/princess-gown.jpg");
     const galleryTexture = loadImageTexture("./assets/gallery.jpg");
-
-    const roomPhoto = new THREE.Mesh(
-      new THREE.PlaneGeometry(16, 9),
-      new THREE.MeshBasicMaterial({ map: roomTexture, color: 0xffe6f4, side: THREE.DoubleSide }),
-    );
-    roomPhoto.position.set(0, 4.5, -8.84);
-    scene.add(roomPhoto);
-
-    scene.add(new THREE.HemisphereLight(0xffd5ec, 0x18202d, 2.2));
-    const pinkLight = new THREE.PointLight(0xff168c, 34, 20);
-    pinkLight.position.set(-5.4, 5.3, -4.4);
-    scene.add(pinkLight);
-    const greenLight = new THREE.PointLight(0x00ff83, 28, 19);
-    greenLight.position.set(5.2, 5.5, -6.5);
-    scene.add(greenLight);
-
-    const materials = {
-      wall: new THREE.MeshStandardMaterial({ color: 0x24202d, roughness: 0.9, side: THREE.DoubleSide }),
-      floor: new THREE.MeshStandardMaterial({ color: 0x15151c, roughness: 0.78 }),
-      pink: new THREE.MeshStandardMaterial({ color: 0xff3d9a, emissive: 0x9b124d, emissiveIntensity: 1.3 }),
-      green: new THREE.MeshStandardMaterial({ color: 0x00ff83, emissive: 0x007a43, emissiveIntensity: 1.4 }),
-      dark: new THREE.MeshStandardMaterial({ color: 0x17141d, roughness: 0.7 }),
-      gold: new THREE.MeshStandardMaterial({ color: 0xf2c66d, metalness: 0.55, roughness: 0.35 }),
-      cream: new THREE.MeshStandardMaterial({ color: 0xe9d5bd, roughness: 0.95 }),
-    };
-
-    function box(parent, width, height, depth, material, x, y, z) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
-      mesh.position.set(x, y, z);
-      parent.add(mesh);
-      return mesh;
-    }
-
-    function line(points, color, radius = 0.025) {
-      const curve = new THREE.CatmullRomCurve3(points.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
-      const mesh = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, Math.max(points.length * 8, 32), radius, 6, false),
-        color,
-      );
-      scene.add(mesh);
-      return mesh;
-    }
-
-    box(scene, 16, 8, 0.25, materials.wall, 0, 4, -9);
-    box(scene, 0.25, 8, 18, materials.wall, -8, 4, 0);
-    box(scene, 0.25, 8, 18, materials.wall, 8, 4, 0);
-    box(scene, 16, 0.2, 18, materials.floor, 0, 0, 0);
-    box(scene, 16, 0.15, 18, materials.dark, 0, 8, 0);
-
-    for (let x = -7; x <= 7; x += 2) {
-      line([[x, 0.12, -8.7], [x, 0.12, 8.5]], materials.green, 0.009);
-    }
-    for (let z = -8; z <= 8; z += 2) {
-      line([[-7.8, 0.13, z], [7.8, 0.13, z]], materials.pink, 0.008);
-    }
-    line([[-7.8, 7.65, -8.7], [7.8, 7.65, -8.7]], materials.pink, 0.035);
-    line([[-7.8, 7.6, -8.7], [-7.8, 7.6, 8.5]], materials.green, 0.025);
-    line([[7.8, 7.6, -8.7], [7.8, 7.6, 8.5]], materials.green, 0.025);
-
-    // A cabinet, mirror, and neon accessories make the room readable without external image assets.
-    const closet = new THREE.Group();
-    closet.position.set(-3, 0, -5.8);
-    scene.add(closet);
-    box(closet, 2.15, 4.7, 1.05, materials.dark, 0, 2.35, 0);
-    box(closet, 0.07, 4.35, 0.05, materials.gold, 0, 2.35, 0.55);
-    box(closet, 0.72, 3.85, 0.07, materials.pink, -0.57, 2.35, 0.57);
-    box(closet, 0.72, 3.85, 0.07, materials.green, 0.57, 2.35, 0.57);
-    for (let i = 0; i < 3; i++) {
-      const dress = new THREE.Mesh(
-        new THREE.ConeGeometry(0.42, 1.65, 5),
-        i % 2 ? materials.green : materials.pink,
-      );
-      dress.position.set(-0.57 + i * 0.56, 2.8, 0.72);
-      dress.rotation.y = Math.PI / 5;
-      closet.add(dress);
-      box(closet, 0.07, 0.72, 0.08, materials.gold, -0.57 + i * 0.56, 3.75, 0.7);
-    }
-    box(
-      closet,
-      1.25,
-      2.45,
-      0.06,
-      new THREE.MeshBasicMaterial({ map: gownTexture }),
-      0,
-      2.5,
-      0.82,
-    );
-    box(closet, 2.4, 0.18, 1.3, materials.gold, 0, 0.14, 0);
-
-    // A low platform and a glowing cushion add depth to the center of the room.
-    box(scene, 4.2, 0.42, 2.4, materials.dark, -0.5, 0.3, -2.2);
-    box(scene, 3.95, 0.28, 2.18, materials.pink, -0.5, 0.65, -2.2);
-    box(scene, 2.6, 0.3, 1.45, materials.cream, -0.5, 0.88, -2.2);
-    box(scene, 0.95, 0.2, 0.6, materials.green, -1.45, 1.05, -2.2);
-    box(scene, 0.95, 0.2, 0.6, materials.pink, 0.45, 1.05, -2.2);
-
-    // The framed canvas faces into the room from the right wall.
-    const art = new THREE.Group();
-    art.position.set(1.2, 3.8, -8.72);
-    scene.add(art);
-    box(art, 2.65, 3.05, 0.18, materials.gold, 0, 0, 0);
-    box(art, 2.3, 2.7, 0.13, materials.dark, 0, 0, 0.02);
-    box(
-      art,
-      1.9,
-      1.35,
-      0.1,
-      new THREE.MeshBasicMaterial({ map: galleryTexture }),
-      0,
-      0.05,
-      0.04,
-    );
+    roomTexture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = roomTexture;
 
     function makeHotspot(label, color) {
       const canvas = document.createElement("canvas");
@@ -415,24 +304,18 @@
       return sprite;
     }
 
-    const wardrobeHotspot = makeHotspot("👗 옷장 열기", "#00ff83");
-    wardrobeHotspot.position.set(-1.6, 3.1, -5.6);
-    const canvasHotspot = makeHotspot("🎨 캔버스 보기", "#ff3d9a");
-    canvasHotspot.position.set(1.35, 4.9, -7.5);
-
-    const stars = new THREE.Group();
-    const starGeometry = new THREE.BufferGeometry();
-    const starPositions = [];
-    for (let i = 0; i < 100; i++) {
-      starPositions.push((Math.random() - 0.5) * 14, 1 + Math.random() * 6, -8 + Math.random() * 16);
+    function placeHotspot(sprite, azimuth, elevation, radius = 8) {
+      sprite.position.set(
+        Math.sin(azimuth) * Math.cos(elevation) * radius,
+        Math.sin(elevation) * radius,
+        -Math.cos(azimuth) * Math.cos(elevation) * radius,
+      );
     }
-    starGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starPositions, 3));
-    const starPoints = new THREE.Points(
-      starGeometry,
-      new THREE.PointsMaterial({ color: 0xffb7df, size: 0.035, transparent: true, opacity: 0.75 }),
-    );
-    stars.add(starPoints);
-    scene.add(stars);
+
+    const wardrobeHotspot = makeHotspot("👗 옷장 열기", "#00ff83");
+    placeHotspot(wardrobeHotspot, -0.5, -0.14);
+    const canvasHotspot = makeHotspot("🎨 캔버스 보기", "#ff3d9a");
+    placeHotspot(canvasHotspot, 0.5, -0.14);
 
     let yaw = 0;
     let pitch = -0.08;
@@ -460,7 +343,7 @@
       const dy = event.clientY - dragStart.y;
       if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
       yaw -= dx * 0.004;
-      pitch = THREE.MathUtils.clamp(pitch - dy * 0.003, -1.05, 1.05);
+      pitch = THREE.MathUtils.clamp(pitch - dy * 0.003, -1.52, 1.52);
       dragStart = { x: event.clientX, y: event.clientY };
       updateCamera();
     });
@@ -496,7 +379,6 @@
 
     function animate() {
       requestAnimationFrame(animate);
-      stars.rotation.y += 0.00025;
       renderer.render(scene, camera);
     }
     animate();
