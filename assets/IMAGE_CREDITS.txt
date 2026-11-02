@@ -2,11 +2,13 @@ Images included in this site
 ============================
 
 room-360.jpg
-  "360 view of Mrs. Sandburg's Bedroom"
-  Creator: NPS Photo
-  License: Public domain (U.S. National Park Service work)
-  Source: https://commons.wikimedia.org/wiki/File:360_view_of_Mrs._Sandburg%27s_Bedroom_(2a47eada-2d4c-4c54-8bce-8fe81c56e617).jpg
-  Web copy resized from the original 8704 x 4352 panorama to 4096 x 2048.
+  "Lythwood Room" 360-degree bedroom and living area panorama
+  Creator: Greg Zaal
+  License: CC0 1.0 Universal (public domain dedication)
+  Source: https://polyhaven.com/a/lythwood_room
+  Web copy resized from the original 8192 x 4096 panorama to 4096 x 2048.
+  The panorama shows built-in wardrobes and framed artwork in the bedroom.
+  License: https://polyhaven.com/license
 
 princess-gown.jpg
   "Pink Ice Gown by Sybil Connolly"

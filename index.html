@@ -203,7 +203,7 @@
   <main id="room-viewer" aria-label="드래그해서 둘러볼 수 있는 3D 공주방"></main>
   <div class="hint">
     ROOM GUIDE<br>드래그: 좌우·위아래 둘러보기 · 휠: 줌 · 아이콘: 클릭<br>
-    <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:360_view_of_Mrs._Sandburg%27s_Bedroom_(2a47eada-2d4c-4c54-8bce-8fe81c56e617).jpg" target="_blank" rel="noopener noreferrer">360° 파노라마: NPS Photo · 퍼블릭 도메인</a>
+    <a class="image-credit" href="https://polyhaven.com/a/lythwood_room" target="_blank" rel="noopener noreferrer">360° 파노라마: Greg Zaal · Poly Haven · CC0</a>
   </div>
 
   <div class="audio-control">
@@ -272,7 +272,7 @@
       return texture;
     }
 
-    const roomTexture = loadImageTexture("./assets/room-360.jpg");
+    const roomTexture = loadImageTexture("./assets/room-360.jpg?v=2");
     const gownTexture = loadImageTexture("./assets/princess-gown.jpg");
     const galleryTexture = loadImageTexture("./assets/gallery.jpg");
     roomTexture.mapping = THREE.EquirectangularReflectionMapping;
@@ -313,11 +313,11 @@
     }
 
     const wardrobeHotspot = makeHotspot("👗 옷장 열기", "#00ff83");
-    placeHotspot(wardrobeHotspot, -0.5, -0.14);
+    placeHotspot(wardrobeHotspot, 1.1, 0.08);
     const canvasHotspot = makeHotspot("🎨 캔버스 보기", "#ff3d9a");
-    placeHotspot(canvasHotspot, 0.5, -0.14);
+    placeHotspot(canvasHotspot, -1.03, 0.12);
 
-    let yaw = 0;
+    let yaw = -1.1;
     let pitch = -0.08;
     let dragStart = null;
     let moved = false;
