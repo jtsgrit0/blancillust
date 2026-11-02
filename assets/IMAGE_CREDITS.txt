@@ -10,6 +10,14 @@ room-360.jpg
   The panorama shows built-in wardrobes and framed artwork in the bedroom.
   License: https://polyhaven.com/license
 
+artist_workshop_4k.exr
+  "Artist Workshop" equirectangular HDRI panorama
+  Creator: Oliksiy Yakovlyev
+  License: CC0 1.0 Universal (public domain dedication)
+  Source: https://polyhaven.com/a/artist_workshop
+  Original 4096 x 2048 EXR file; used as the active 360-degree background.
+  License: https://polyhaven.com/license
+
 princess-gown.jpg
   "Pink Ice Gown by Sybil Connolly"
   Creator: Hunt Museum and Eamonn O'Mahony

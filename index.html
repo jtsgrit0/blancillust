@@ -197,13 +197,13 @@
 <body>
   <header>
     <h1>👑 BALMING PRINCESS 3D ROOM 👑</h1>
-    <p class="ticker">🖱️ 드래그해서 사방을 둘러보고 👗 옷장과 🎨 캔버스를 눌러보세요.</p>
+    <p class="ticker">🖱️ 드래그해서 사방을 둘러보고 🧥 옷걸이와 🎨 그림을 눌러보세요.</p>
   </header>
 
   <main id="room-viewer" aria-label="드래그해서 둘러볼 수 있는 3D 공주방"></main>
   <div class="hint">
     ROOM GUIDE<br>드래그: 좌우·위아래 둘러보기 · 휠: 줌 · 아이콘: 클릭<br>
-    <a class="image-credit" href="https://polyhaven.com/a/lythwood_room" target="_blank" rel="noopener noreferrer">360° 파노라마: Greg Zaal · Poly Haven · CC0</a>
+    <a class="image-credit" href="https://polyhaven.com/a/artist_workshop" target="_blank" rel="noopener noreferrer">360° 파노라마: Oliksiy Yakovlyev · Poly Haven · CC0</a>
   </div>
 
   <div class="audio-control">
@@ -217,7 +217,7 @@
         <button class="close-btn" type="button" data-close aria-label="닫기">X</button>
       </div>
       <div class="modal-body">
-        <p>공주방 드레스룸에 침투했습니다.</p>
+        <p>작업실 옷걸이에서 공주님의 드레스를 발견했습니다.</p>
         <div class="item-box">
           <img class="feature-image wardrobe-image" src="./assets/princess-gown.jpg" alt="핑크 실크와 레이스로 만든 빈티지 이브닝 드레스">
           <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:Pink_Ice_Gown_by_Sybil_Connolly.jpg" target="_blank" rel="noopener noreferrer">드레스 사진: Hunt Museum · CC0</a>
@@ -249,8 +249,16 @@
     </section>
   </div>
 
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
   <script type="module">
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    import { EXRLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/EXRLoader.js";
 
     const container = document.getElementById("room-viewer");
     const scene = new THREE.Scene();
@@ -272,11 +280,14 @@
       return texture;
     }
 
-    const roomTexture = loadImageTexture("./assets/room-360.jpg?v=2");
     const gownTexture = loadImageTexture("./assets/princess-gown.jpg");
     const galleryTexture = loadImageTexture("./assets/gallery.jpg");
-    roomTexture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = roomTexture;
+    new EXRLoader().load("./assets/artist_workshop_4k.exr", (roomTexture) => {
+      roomTexture.mapping = THREE.EquirectangularReflectionMapping;
+      scene.background = roomTexture;
+    }, undefined, (error) => {
+      console.error("360° 작업실 파노라마를 불러오지 못했습니다.", error);
+    });
 
     function makeHotspot(label, color) {
       const canvas = document.createElement("canvas");
@@ -312,12 +323,12 @@
       );
     }
 
-    const wardrobeHotspot = makeHotspot("👗 옷장 열기", "#00ff83");
-    placeHotspot(wardrobeHotspot, 1.1, 0.08);
+    const wardrobeHotspot = makeHotspot("🧥 옷걸이 보기", "#00ff83");
+    placeHotspot(wardrobeHotspot, -0.55, 0.08);
     const canvasHotspot = makeHotspot("🎨 캔버스 보기", "#ff3d9a");
     placeHotspot(canvasHotspot, -1.03, 0.12);
 
-    let yaw = -1.1;
+    let yaw = 1.03;
     let pitch = -0.08;
     let dragStart = null;
     let moved = false;
