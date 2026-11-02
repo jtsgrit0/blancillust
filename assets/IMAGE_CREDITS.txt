@@ -1,0 +1,26 @@
+Images included in this site
+============================
+
+royal-room.jpg
+  "20230520 Interiors of the Yusupov Palace on Moika 66"
+  Creator: Sergey A. Demidov
+  License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+  Source: https://commons.wikimedia.org/wiki/File:20230520_Interiors_of_the_Yusupov_Palace_on_Moika_66.jpg
+  License: https://creativecommons.org/licenses/by/4.0/
+
+princess-gown.jpg
+  "Pink Ice Gown by Sybil Connolly"
+  Creator: Hunt Museum and Eamonn O'Mahony
+  License: CC0 1.0 Universal (public domain dedication)
+  Source: https://commons.wikimedia.org/wiki/File:Pink_Ice_Gown_by_Sybil_Connolly.jpg
+  License: https://creativecommons.org/publicdomain/zero/1.0/
+
+gallery.jpg
+  "Interior of Gallery of 19th and 20th Century Art (Pushkin museum) - 020"
+  Creator: Netelo
+  License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+  Source: https://commons.wikimedia.org/wiki/File:Interior_of_Gallery_of_19th_and_20th_Century_Art_(Pushkin_museum)_-_020.jpg
+  License: https://creativecommons.org/licenses/by-sa/4.0/
+
+The original files are credited under their respective licenses. The images
+are bundled locally so the site does not depend on third-party image hosting.

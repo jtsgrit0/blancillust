@@ -116,6 +116,8 @@
 
     .modal {
       width: min(100%, 450px);
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
       border: 3px solid var(--pink);
       background: #16161c;
       box-shadow: 12px 12px 0 #000;
@@ -145,6 +147,27 @@
     .item-box h2 { margin: 0 0 8px; font-size: 1rem; }
     .item-box p { margin: 8px 0; color: #c9c9d0; font-size: .87rem; }
     .price { margin: 5px 0; color: var(--pink); font-weight: bold; }
+
+    .feature-image {
+      display: block;
+      width: 100%;
+      max-height: 280px;
+      border: 1px solid rgba(255, 61, 154, .7);
+      background: #fff;
+    }
+
+    .wardrobe-image { height: 280px; object-fit: contain; }
+    .gallery-image { aspect-ratio: 4 / 3; object-fit: cover; }
+
+    .image-credit {
+      display: inline-block;
+      margin-top: 8px;
+      color: #b7ffc9;
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+
+    .hint .image-credit { pointer-events: auto; }
 
     .buy-btn {
       display: block;
@@ -178,7 +201,10 @@
   </header>
 
   <main id="room-viewer" aria-label="드래그해서 둘러볼 수 있는 3D 공주방"></main>
-  <div class="hint">ROOM GUIDE<br>드래그: 360° 둘러보기 · 휠: 줌 · 빛나는 오브젝트: 클릭</div>
+  <div class="hint">
+    ROOM GUIDE<br>드래그: 360° 둘러보기 · 휠: 줌 · 빛나는 오브젝트: 클릭<br>
+    <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:20230520_Interiors_of_the_Yusupov_Palace_on_Moika_66.jpg" target="_blank" rel="noopener noreferrer">배경 사진: Sergey A. Demidov · CC BY 4.0</a>
+  </div>
 
   <div class="audio-control">
     📻 ROOM_BGM: <button type="button" id="audioBtn" aria-pressed="false">PLAY</button>
@@ -193,6 +219,8 @@
       <div class="modal-body">
         <p>공주방 드레스룸에 침투했습니다.</p>
         <div class="item-box">
+          <img class="feature-image wardrobe-image" src="./assets/princess-gown.jpg" alt="핑크 실크와 레이스로 만든 빈티지 이브닝 드레스">
+          <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:Pink_Ice_Gown_by_Sybil_Connolly.jpg" target="_blank" rel="noopener noreferrer">드레스 사진: Hunt Museum · CC0</a>
           <h2>[DRESS 01] 네온 프릴 디스토피아 드레스</h2>
           <div class="price">₩129,000</div>
           <p>90년대 야광 핑크 디테일 프릴 드레스.</p>
@@ -211,6 +239,8 @@
       <div class="modal-body">
         <p>봉인된 예술 기록 장치입니다.</p>
         <div class="item-box">
+          <img class="feature-image gallery-image" src="./assets/gallery.jpg" alt="푸시킨 미술관 19~20세기 미술 전시실">
+          <a class="image-credit" href="https://commons.wikimedia.org/wiki/File:Interior_of_Gallery_of_19th_and_20th_Century_Art_(Pushkin_museum)_-_020.jpg" target="_blank" rel="noopener noreferrer">갤러리 사진: Netelo · CC BY-SA 4.0</a>
           <h2>🖼️ TRACK 01: 호랑이 연고를 바른 천사들</h2>
           <p class="timestamp">TIMESTAMP: 2026.11.02</p>
           <p>대기실에서 비트를 들으며 립스틱과 물감을 마구 짓이겨 배치한 기이한 혼돈의 흔적.</p>
@@ -234,6 +264,25 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
+
+    function loadImageTexture(path) {
+      const texture = new THREE.TextureLoader().load(path, undefined, undefined, (error) => {
+        console.error(`이미지를 불러오지 못했습니다: ${path}`, error);
+      });
+      texture.colorSpace = THREE.SRGBColorSpace;
+      return texture;
+    }
+
+    const roomTexture = loadImageTexture("./assets/royal-room.jpg");
+    const gownTexture = loadImageTexture("./assets/princess-gown.jpg");
+    const galleryTexture = loadImageTexture("./assets/gallery.jpg");
+
+    const roomPhoto = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 9),
+      new THREE.MeshBasicMaterial({ map: roomTexture, color: 0xffe6f4, side: THREE.DoubleSide }),
+    );
+    roomPhoto.position.set(0, 4.5, -8.84);
+    scene.add(roomPhoto);
 
     scene.add(new THREE.HemisphereLight(0xffd5ec, 0x18202d, 2.2));
     const pinkLight = new THREE.PointLight(0xff168c, 34, 20);
@@ -304,6 +353,16 @@
       closet.add(dress);
       box(closet, 0.07, 0.72, 0.08, materials.gold, -0.57 + i * 0.56, 3.75, 0.7);
     }
+    box(
+      closet,
+      1.25,
+      2.45,
+      0.06,
+      new THREE.MeshBasicMaterial({ map: gownTexture }),
+      0,
+      2.5,
+      0.82,
+    );
     box(closet, 2.4, 0.18, 1.3, materials.gold, 0, 0.14, 0);
 
     // A low platform and a glowing cushion add depth to the center of the room.
@@ -319,17 +378,16 @@
     scene.add(art);
     box(art, 2.65, 3.05, 0.18, materials.gold, 0, 0, 0);
     box(art, 2.3, 2.7, 0.13, materials.dark, 0, 0, 0.02);
-    box(art, 1.9, 1.35, 0.1, materials.pink, 0, 0.05, 0.04);
-    const sun = new THREE.Mesh(new THREE.SphereGeometry(0.46, 24, 16), materials.green);
-    sun.position.set(0, 0.48, 0.12);
-    art.add(sun);
-    const artStroke = new THREE.CatmullRomCurve3([
-      [-0.05, -0.95, 0.16],
-      [0.35, -0.38, 0.16],
-      [-0.38, 0.05, 0.16],
-      [0.32, 0.56, 0.16],
-    ].map(([x, y, z]) => new THREE.Vector3(x, y, z)));
-    art.add(new THREE.Mesh(new THREE.TubeGeometry(artStroke, 48, 0.045, 6, false), materials.gold));
+    box(
+      art,
+      1.9,
+      1.35,
+      0.1,
+      new THREE.MeshBasicMaterial({ map: galleryTexture }),
+      0,
+      0.05,
+      0.04,
+    );
 
     function makeHotspot(label, color) {
       const canvas = document.createElement("canvas");
