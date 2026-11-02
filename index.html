@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09090d">
+  <meta name="description" content="네온과 기묘한 오브젝트로 채운 공주님의 3D 드림룸.">
+  <title>👑 BALMING PRINCESS 3D ROOM 👑</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --green: #00ff83;
+      --pink: #ff3d9a;
+      --ink: #09090d;
+      --panel: rgba(15, 15, 22, .92);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--ink);
+      color: #fff;
+      font-family: "Courier New", monospace;
+    }
+
+    button, a { font: inherit; }
+    button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+    #room-viewer {
+      position: fixed;
+      inset: 0;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #room-viewer:active { cursor: grabbing; }
+    #room-viewer canvas { display: block; }
+
+    header {
+      position: fixed;
+      z-index: 2;
+      top: 20px;
+      left: 50%;
+      width: min(90vw, 800px);
+      padding: 12px 18px;
+      transform: translateX(-50%);
+      border: 2px solid var(--pink);
+      background: rgba(17, 17, 22, .88);
+      box-shadow: 5px 5px 0 var(--green);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    h1 { margin: 0 0 6px; font-size: clamp(1rem, 3vw, 1.5rem); }
+
+    .ticker {
+      margin: 0;
+      color: var(--green);
+      font-size: .9rem;
+      font-weight: bold;
+    }
+
+    .hint {
+      position: fixed;
+      z-index: 2;
+      bottom: 20px;
+      left: 20px;
+      max-width: min(58vw, 390px);
+      padding: 10px 12px;
+      border: 1px solid rgba(0, 255, 131, .65);
+      background: var(--panel);
+      color: #d7d7de;
+      font-size: .8rem;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    .audio-control {
+      position: fixed;
+      z-index: 2;
+      right: 20px;
+      bottom: 20px;
+      padding: 10px;
+      border: 2px solid var(--green);
+      background: var(--panel);
+      color: var(--pink);
+      font-size: .85rem;
+      font-weight: bold;
+    }
+
+    .audio-control button, .close-btn {
+      border: 1px solid var(--green);
+      background: #050507;
+      color: var(--green);
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .audio-control button { margin-left: 8px; padding: 4px 10px; }
+
+    .backdrop {
+      position: fixed;
+      z-index: 5;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, .72);
+    }
+
+    .backdrop[hidden] { display: none; }
+
+    .modal {
+      width: min(100%, 450px);
+      border: 3px solid var(--pink);
+      background: #16161c;
+      box-shadow: 12px 12px 0 #000;
+      color: #fff;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 15px;
+      background: linear-gradient(90deg, var(--pink), #70003c);
+      font-weight: bold;
+    }
+
+    .close-btn { padding: 3px 9px; }
+    .modal-body { padding: 18px; line-height: 1.55; }
+
+    .item-box {
+      margin-top: 12px;
+      padding: 15px;
+      border: 1px dashed var(--green);
+      background: #0d0d11;
+    }
+
+    .item-box h2 { margin: 0 0 8px; font-size: 1rem; }
+    .item-box p { margin: 8px 0; color: #c9c9d0; font-size: .87rem; }
+    .price { margin: 5px 0; color: var(--pink); font-weight: bold; }
+
+    .buy-btn {
+      display: block;
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--green);
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .timestamp { color: var(--green) !important; }
+
+    @media (max-width: 560px) {
+      header { top: 12px; width: calc(100vw - 32px); padding: 10px; }
+      .ticker { font-size: .75rem; }
+      .hint { bottom: 78px; left: 12px; max-width: calc(100vw - 24px); font-size: .72rem; }
+      .audio-control { right: 12px; bottom: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>👑 BALMING PRINCESS 3D ROOM 👑</h1>
+    <p class="ticker">🖱️ 드래그해서 방을 둘러보고 👗 옷장과 🎨 캔버스를 눌러보세요.</p>
+  </header>
+
+  <main id="room-viewer" aria-label="드래그해서 둘러볼 수 있는 3D 공주방"></main>
+  <div class="hint">ROOM GUIDE<br>드래그: 360° 둘러보기 · 휠: 줌 · 빛나는 오브젝트: 클릭</div>
+
+  <div class="audio-control">
+    📻 ROOM_BGM: <button type="button" id="audioBtn" aria-pressed="false">PLAY</button>
+  </div>
+
+  <div class="backdrop" id="wardrobeBackdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="wardrobeTitle">
+      <div class="modal-header">
+        <span id="wardrobeTitle">👗 CLOSET_INTERFACE.EXE</span>
+        <button class="close-btn" type="button" data-close aria-label="닫기">X</button>
+      </div>
+      <div class="modal-body">
+        <p>공주방 드레스룸에 침투했습니다.</p>
+        <div class="item-box">
+          <h2>[DRESS 01] 네온 프릴 디스토피아 드레스</h2>
+          <div class="price">₩129,000</div>
+          <p>90년대 야광 핑크 디테일 프릴 드레스.</p>
+          <a class="buy-btn" href="https://search.shopping.naver.com/" target="_blank" rel="noopener noreferrer">🛒 네이버 쇼핑 둘러보기</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="backdrop" id="canvasBackdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="canvasTitle">
+      <div class="modal-header">
+        <span id="canvasTitle">🎨 CANVAS_ARCHIVE.SYS</span>
+        <button class="close-btn" type="button" data-close aria-label="닫기">X</button>
+      </div>
+      <div class="modal-body">
+        <p>봉인된 예술 기록 장치입니다.</p>
+        <div class="item-box">
+          <h2>🖼️ TRACK 01: 호랑이 연고를 바른 천사들</h2>
+          <p class="timestamp">TIMESTAMP: 2026.11.02</p>
+          <p>대기실에서 비트를 들으며 립스틱과 물감을 마구 짓이겨 배치한 기이한 혼돈의 흔적.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+    const container = document.getElementById("room-viewer");
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x09090d);
+    scene.fog = new THREE.Fog(0x09090d, 15, 34);
+
+    const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 60);
+    camera.position.set(0, 2.4, 1.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0xffd5ec, 0x18202d, 2.2));
+    const pinkLight = new THREE.PointLight(0xff168c, 34, 20);
+    pinkLight.position.set(-5.4, 5.3, -4.4);
+    scene.add(pinkLight);
+    const greenLight = new THREE.PointLight(0x00ff83, 28, 19);
+    greenLight.position.set(5.2, 5.5, -6.5);
+    scene.add(greenLight);
+
+    const materials = {
+      wall: new THREE.MeshStandardMaterial({ color: 0x24202d, roughness: 0.9, side: THREE.DoubleSide }),
+      floor: new THREE.MeshStandardMaterial({ color: 0x15151c, roughness: 0.78 }),
+      pink: new THREE.MeshStandardMaterial({ color: 0xff3d9a, emissive: 0x9b124d, emissiveIntensity: 1.3 }),
+      green: new THREE.MeshStandardMaterial({ color: 0x00ff83, emissive: 0x007a43, emissiveIntensity: 1.4 }),
+      dark: new THREE.MeshStandardMaterial({ color: 0x17141d, roughness: 0.7 }),
+      gold: new THREE.MeshStandardMaterial({ color: 0xf2c66d, metalness: 0.55, roughness: 0.35 }),
+      cream: new THREE.MeshStandardMaterial({ color: 0xe9d5bd, roughness: 0.95 }),
+    };
+
+    function box(parent, width, height, depth, material, x, y, z) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+      mesh.position.set(x, y, z);
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function line(points, color, radius = 0.025) {
+      const curve = new THREE.CatmullRomCurve3(points.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+      const mesh = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, Math.max(points.length * 8, 32), radius, 6, false),
+        color,
+      );
+      scene.add(mesh);
+      return mesh;
+    }
+
+    box(scene, 16, 8, 0.25, materials.wall, 0, 4, -9);
+    box(scene, 0.25, 8, 18, materials.wall, -8, 4, 0);
+    box(scene, 0.25, 8, 18, materials.wall, 8, 4, 0);
+    box(scene, 16, 0.2, 18, materials.floor, 0, 0, 0);
+    box(scene, 16, 0.15, 18, materials.dark, 0, 8, 0);
+
+    for (let x = -7; x <= 7; x += 2) {
+      line([[x, 0.12, -8.7], [x, 0.12, 8.5]], materials.green, 0.009);
+    }
+    for (let z = -8; z <= 8; z += 2) {
+      line([[-7.8, 0.13, z], [7.8, 0.13, z]], materials.pink, 0.008);
+    }
+    line([[-7.8, 7.65, -8.7], [7.8, 7.65, -8.7]], materials.pink, 0.035);
+    line([[-7.8, 7.6, -8.7], [-7.8, 7.6, 8.5]], materials.green, 0.025);
+    line([[7.8, 7.6, -8.7], [7.8, 7.6, 8.5]], materials.green, 0.025);
+
+    // A cabinet, mirror, and neon accessories make the room readable without external image assets.
+    const closet = new THREE.Group();
+    closet.position.set(-3, 0, -5.8);
+    scene.add(closet);
+    box(closet, 2.15, 4.7, 1.05, materials.dark, 0, 2.35, 0);
+    box(closet, 0.07, 4.35, 0.05, materials.gold, 0, 2.35, 0.55);
+    box(closet, 0.72, 3.85, 0.07, materials.pink, -0.57, 2.35, 0.57);
+    box(closet, 0.72, 3.85, 0.07, materials.green, 0.57, 2.35, 0.57);
+    for (let i = 0; i < 3; i++) {
+      const dress = new THREE.Mesh(
+        new THREE.ConeGeometry(0.42, 1.65, 5),
+        i % 2 ? materials.green : materials.pink,
+      );
+      dress.position.set(-0.57 + i * 0.56, 2.8, 0.72);
+      dress.rotation.y = Math.PI / 5;
+      closet.add(dress);
+      box(closet, 0.07, 0.72, 0.08, materials.gold, -0.57 + i * 0.56, 3.75, 0.7);
+    }
+    box(closet, 2.4, 0.18, 1.3, materials.gold, 0, 0.14, 0);
+
+    // A low platform and a glowing cushion add depth to the center of the room.
+    box(scene, 4.2, 0.42, 2.4, materials.dark, -0.5, 0.3, -2.2);
+    box(scene, 3.95, 0.28, 2.18, materials.pink, -0.5, 0.65, -2.2);
+    box(scene, 2.6, 0.3, 1.45, materials.cream, -0.5, 0.88, -2.2);
+    box(scene, 0.95, 0.2, 0.6, materials.green, -1.45, 1.05, -2.2);
+    box(scene, 0.95, 0.2, 0.6, materials.pink, 0.45, 1.05, -2.2);
+
+    // The framed canvas faces into the room from the right wall.
+    const art = new THREE.Group();
+    art.position.set(1.2, 3.8, -8.72);
+    scene.add(art);
+    box(art, 2.65, 3.05, 0.18, materials.gold, 0, 0, 0);
+    box(art, 2.3, 2.7, 0.13, materials.dark, 0, 0, 0.02);
+    box(art, 1.9, 1.35, 0.1, materials.pink, 0, 0.05, 0.04);
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(0.46, 24, 16), materials.green);
+    sun.position.set(0, 0.48, 0.12);
+    art.add(sun);
+    const artStroke = new THREE.CatmullRomCurve3([
+      [-0.05, -0.95, 0.16],
+      [0.35, -0.38, 0.16],
+      [-0.38, 0.05, 0.16],
+      [0.32, 0.56, 0.16],
+    ].map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+    art.add(new THREE.Mesh(new THREE.TubeGeometry(artStroke, 48, 0.045, 6, false), materials.gold));
+
+    function makeHotspot(label, color) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 640;
+      canvas.height = 160;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "rgba(8, 8, 13, .9)";
+      context.strokeStyle = color;
+      context.lineWidth = 6;
+      context.beginPath();
+      context.roundRect(5, 5, 630, 150, 22);
+      context.fill();
+      context.stroke();
+      context.font = "bold 46px 'Courier New', monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "#ffffff";
+      context.fillText(label, 320, 82);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+      sprite.scale.set(3.8, 0.95, 1);
+      sprite.userData.hotspot = true;
+      scene.add(sprite);
+      return sprite;
+    }
+
+    const wardrobeHotspot = makeHotspot("👗 옷장 열기", "#00ff83");
+    wardrobeHotspot.position.set(-1.6, 3.1, -5.6);
+    const canvasHotspot = makeHotspot("🎨 캔버스 보기", "#ff3d9a");
+    canvasHotspot.position.set(1.35, 4.9, -7.5);
+
+    const stars = new THREE.Group();
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+    for (let i = 0; i < 100; i++) {
+      starPositions.push((Math.random() - 0.5) * 14, 1 + Math.random() * 6, -8 + Math.random() * 16);
+    }
+    starGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starPositions, 3));
+    const starPoints = new THREE.Points(
+      starGeometry,
+      new THREE.PointsMaterial({ color: 0xffb7df, size: 0.035, transparent: true, opacity: 0.75 }),
+    );
+    stars.add(starPoints);
+    scene.add(stars);
+
+    let yaw = 0;
+    let pitch = -0.08;
+    let dragStart = null;
+    let moved = false;
+    const pointer = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+    raycaster.params.Sprite = { threshold: 0.35 };
+
+    function updateCamera() {
+      camera.rotation.order = "YXZ";
+      camera.rotation.set(pitch, yaw, 0);
+    }
+    updateCamera();
+
+    container.addEventListener("pointerdown", (event) => {
+      dragStart = { x: event.clientX, y: event.clientY };
+      moved = false;
+      container.setPointerCapture(event.pointerId);
+    });
+
+    container.addEventListener("pointermove", (event) => {
+      if (!dragStart) return;
+      const dx = event.clientX - dragStart.x;
+      const dy = event.clientY - dragStart.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      yaw -= dx * 0.004;
+      pitch = THREE.MathUtils.clamp(pitch - dy * 0.003, -1.05, 1.05);
+      dragStart = { x: event.clientX, y: event.clientY };
+      updateCamera();
+    });
+
+    container.addEventListener("pointerup", (event) => {
+      if (dragStart && !moved) {
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObjects([wardrobeHotspot, canvasHotspot])[0];
+        if (hit?.object === wardrobeHotspot) openModal("wardrobeBackdrop");
+        if (hit?.object === canvasHotspot) openModal("canvasBackdrop");
+      }
+      dragStart = null;
+    });
+
+    container.addEventListener("pointercancel", () => { dragStart = null; });
+    container.addEventListener("wheel", (event) => {
+      camera.fov = THREE.MathUtils.clamp(camera.fov + event.deltaY * 0.025, 48, 88);
+      camera.updateProjectionMatrix();
+    }, { passive: true });
+
+    function resize() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.fov = width < 560 ? 84 : 72;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      stars.rotation.y += 0.00025;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    let audioContext;
+    let oscillators = [];
+    let masterGain;
+    const audioButton = document.getElementById("audioBtn");
+
+    audioButton.addEventListener("click", async () => {
+      if (audioContext?.state === "running") {
+        await audioContext.suspend();
+        audioButton.textContent = "PLAY";
+        audioButton.setAttribute("aria-pressed", "false");
+        return;
+      }
+      audioContext ??= new AudioContext();
+      await audioContext.resume();
+      if (oscillators.length === 0) {
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.018;
+        masterGain.connect(audioContext.destination);
+        for (const [frequency, type] of [[55, "sine"], [82.41, "triangle"], [164.81, "sine"]]) {
+          const oscillator = audioContext.createOscillator();
+          oscillator.type = type;
+          oscillator.frequency.value = frequency;
+          oscillator.connect(masterGain);
+          oscillator.start();
+          oscillators.push(oscillator);
+        }
+      }
+      audioButton.textContent = "PAUSE";
+      audioButton.setAttribute("aria-pressed", "true");
+    });
+
+    let lastFocusedElement;
+    function openModal(id) {
+      const backdrop = document.getElementById(id);
+      lastFocusedElement = document.activeElement;
+      backdrop.hidden = false;
+      backdrop.querySelector("[data-close]").focus();
+    }
+    function closeModals() {
+      document.querySelectorAll(".backdrop:not([hidden])").forEach((backdrop) => { backdrop.hidden = true; });
+      lastFocusedElement?.focus?.();
+    }
+    document.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", closeModals));
+    document.querySelectorAll(".backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeModals();
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeModals();
+    });
+  </script>
+</body>
+</html>
